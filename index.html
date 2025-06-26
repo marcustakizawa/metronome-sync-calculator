@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metronome Sync Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Chicago", "Monaco", "Courier New", monospace;
+            background: #C0C0C0;
+            background-image: 
+                radial-gradient(circle at 2px 2px, rgba(0,0,0,0.02) 1px, transparent 0);
+            background-size: 4px 4px;
+            min-height: 100vh;
+            padding: 20px;
+            color: #000;
+        }
+
+        .desktop {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .window {
+            background: #F0F0F0;
+            border: 2px outset #C0C0C0;
+            border-radius: 0;
+            margin-bottom: 15px;
+            box-shadow: 3px 3px 0px rgba(0,0,0,0.3);
+        }
+
+        .title-bar {
+            background: linear-gradient(to bottom, #E0E0E0 0%, #D0D0D0 100%);
+            border-bottom: 1px solid #A0A0A0;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .title-bar .close-box {
+            width: 12px;
+            height: 12px;
+            background: white;
+            border: 1px solid #808080;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            cursor: pointer;
+        }
+
+        .title-bar .title {
+            flex-grow: 1;
+            text-align: center;
+            margin-right: 20px;
+        }
+
+        .window-content {
+            padding: 12px;
+        }
+
+        .dialog-box {
+            background: #F0F0F0;
+            border: 2px inset #C0C0C0;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .group-box {
+            border: 1px solid #808080;
+            margin: 8px 0;
+            position: relative;
+        }
+
+        .group-title {
+            position: absolute;
+            top: -7px;
+            left: 8px;
+            background: #F0F0F0;
+            padding: 0 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .group-content {
+            padding: 12px 8px 8px 8px;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 8px;
+        }
+
+        .label {
+            min-width: 120px;
+            font-size: 12px;
+            font-weight: normal;
+        }
+
+        .text-field {
+            border: 2px inset #C0C0C0;
+            background: white;
+            padding: 3px 6px;
+            font-family: "Monaco", "Courier New", monospace;
+            font-size: 12px;
+            width: 80px;
+        }
+
+        .text-field:focus {
+            outline: 1px solid #000;
+            outline-offset: -1px;
+        }
+
+        .button {
+            background: #E0E0E0;
+            border: 2px outset #C0C0C0;
+            padding: 4px 12px;
+            font-family: inherit;
+            font-size: 11px;
+            cursor: pointer;
+            margin: 2px;
+        }
+
+        .button:active {
+            border: 2px inset #C0C0C0;
+        }
+
+        .button:hover {
+            background: #E8E8E8;
+        }
+
+        .default-button {
+            background: #000;
+            color: white;
+            border: 2px outset #404040;
+        }
+
+        .default-button:active {
+            border: 2px inset #404040;
+        }
+
+        .console-output {
+            background: white;
+            border: 2px inset #C0C0C0;
+            padding: 8px;
+            font-family: "Monaco", "Courier New", monospace;
+            font-size: 11px;
+            line-height: 1.4;
+            min-height: 120px;
+            white-space: pre-wrap;
+            overflow-y: auto;
+        }
+
+        .text-area {
+            background: white;
+            border: 2px inset #C0C0C0;
+            padding: 6px;
+            font-family: "Monaco", "Courier New", monospace;
+            font-size: 11px;
+            width: 100%;
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .status-line {
+            background: #D0D0D0;
+            border-top: 1px solid #A0A0A0;
+            padding: 3px 8px;
+            font-size: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .menu-bar {
+            background: white;
+            border-bottom: 1px solid #808080;
+            padding: 2px 0;
+            font-size: 12px;
+        }
+
+        .menu-item {
+            display: inline-block;
+            padding: 2px 12px;
+            cursor: pointer;
+        }
+
+        .menu-item:hover {
+            background: #000;
+            color: white;
+        }
+
+        .about-text {
+            text-align: center;
+            font-size: 11px;
+            line-height: 1.3;
+            margin: 8px 0;
+        }
+
+        .icon {
+            width: 32px;
+            height: 32px;
+            background: white;
+            border: 1px solid #808080;
+            margin: 4px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        @media (max-width: 600px) {
+            .input-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .label {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="desktop">
+        <!-- Main Calculator Window -->
+        <div class="window">
+            <div class="title-bar">
+                <div class="close-box">⊡</div>
+                <div class="title">Metronome Synchronization Calculator v1.0</div>
+            </div>
+            
+            <div class="menu-bar">
+                <span class="menu-item">File</span>
+                <span class="menu-item">Edit</span>
+                <span class="menu-item">Calculate</span>
+                <span class="menu-item">Help</span>
+            </div>
+
+            <div class="window-content">
+                <div class="group-box">
+                    <div class="group-title">Primary Metronome</div>
+                    <div class="group-content">
+                        <div class="input-row">
+                            <span class="label">Beats:</span>
+                            <input type="number" class="text-field" id="primaryBeats" value="4" min="1" max="16">
+                            <span class="label">BPM:</span>
+                            <input type="number" class="text-field" id="primaryBpm" value="120" min="20" max="400" step="0.1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group-box">
+                    <div class="group-title">Target Metronomes (Input: Beats)</div>
+                    <div class="group-content">
+                        <div class="input-row">
+                            <span class="label">Metronome 2 - Beats:</span>
+                            <input type="number" class="text-field" id="secondaryBeats" value="3" min="1" max="16">
+                            <span class="label">Metronome 3 - Beats:</span>
+                            <input type="number" class="text-field" id="tertiaryBeats" value="6" min="1" max="16">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group-box">
+                    <div class="group-title">Results</div>
+                    <div class="group-content">
+                        <div class="console-output" id="results">Metronome Sync Calculator v1.0
+Ready to calculate synchronized BPM values...
+
+Click "Calculate" to add results to this console.
+Use "Clear Inputs" to reset form fields.
+Use "Clear Results" to empty this console.</div>
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <button class="default-button" onclick="addCalculation()">Calculate</button>
+                    <button class="button" onclick="clearInputs()">Clear Inputs</button>
+                    <button class="button" onclick="clearResults()">Clear Results</button>
+                    <button class="button" onclick="exportResults()">Export...</button>
+                </div>
+            </div>
+
+            <div class="status-line">
+                <span>Ready</span>
+                <span>Calculations: <span id="calcCount">0</span></span>
+            </div>
+        </div>
+
+        <!-- Export Dialog Window -->
+        <div class="window" id="exportWindow" style="display: none;">
+            <div class="title-bar">
+                <div class="close-box" onclick="closeExport()">⊡</div>
+                <div class="title">Export Results</div>
+            </div>
+            
+            <div class="window-content">
+                <div class="about-text">
+                    Export synchronized metronome data for Unity event parser:
+                </div>
+                
+                <textarea class="text-area" id="exportText" readonly></textarea>
+                
+                <div class="input-row" style="justify-content: center; margin-top: 8px;">
+                    <button class="default-button" onclick="copyToClipboard()">Copy</button>
+                    <button class="button" onclick="closeExport()">Done</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Dialog -->
+        <div class="window" id="aboutWindow" style="display: none;">
+            <div class="title-bar">
+                <div class="close-box" onclick="closeAbout()">⊡</div>
+                <div class="title">About Metronome Sync Calculator</div>
+            </div>
+            
+            <div class="window-content">
+                <div class="icon">🎵</div>
+                <div class="about-text">
+                    <strong>Metronome Synchronization Calculator</strong><br>
+                    Version 1.0<br><br>
+                    
+                    Calculate synchronized BPM values for multiple metronomes<br>
+                    with different time signatures.<br><br>
+                    
+                    Compatible with Unity ChangeComposer event parser.<br><br>
+                    
+                    © 2025 Marcus Takizawa
+                </div>
+                
+                <div class="input-row" style="justify-content: center;">
+                    <button class="default-button" onclick="closeAbout()">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let calculationCount = 0;
+        let allCalculations = []; // Store all calculations for export
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('Ready - Click Calculate to add results');
+        });
+
+        function addCalculation() {
+            const primaryBeats = parseInt(document.getElementById('primaryBeats').value) || 4;
+            const primaryBpm = parseFloat(document.getElementById('primaryBpm').value) || 120;
+            const secondaryBeats = parseInt(document.getElementById('secondaryBeats').value) || 3;
+            const tertiaryBeats = parseInt(document.getElementById('tertiaryBeats').value) || 6;
+
+            if (primaryBeats <= 0 || primaryBpm <= 0 || secondaryBeats <= 0 || tertiaryBeats <= 0) {
+                updateStatus('Error: Invalid input values');
+                return;
+            }
+
+            const secondaryBpm = (primaryBpm * secondaryBeats) / primaryBeats;
+            const tertiaryBpm = (primaryBpm * tertiaryBeats) / primaryBeats;
+
+            calculationCount++;
+            
+            // Store calculation for export
+            allCalculations.push({
+                id: calculationCount,
+                primaryBeats, primaryBpm, secondaryBeats, secondaryBpm, tertiaryBeats, tertiaryBpm
+            });
+
+            // Get current console content
+            const console = document.getElementById('results');
+            const currentText = console.textContent;
+            
+            // If this is the first calculation, clear the intro text
+            let newText;
+            if (calculationCount === 1) {
+                newText = `Metronome Sync Calculator v1.0\n`;
+            } else {
+                newText = currentText;
+            }
+
+            // Add new calculation
+            newText += `
+Calculation #${calculationCount}:
+  Primary:   ${primaryBeats} beats @ ${primaryBpm} BPM
+  Secondary: ${secondaryBeats} beats @ ${secondaryBpm.toFixed(1)} BPM  
+  Tertiary:  ${tertiaryBeats} beats @ ${tertiaryBpm.toFixed(1)} BPM
+  Ratios: ${primaryBeats}:${secondaryBeats}:${tertiaryBeats}
+`;
+
+            console.textContent = newText;
+            console.scrollTop = console.scrollHeight; // Scroll to bottom
+            
+            document.getElementById('calcCount').textContent = calculationCount;
+            updateStatus(`Added calculation #${calculationCount}`);
+        }
+
+        function clearInputs() {
+            document.getElementById('primaryBeats').value = 4;
+            document.getElementById('primaryBpm').value = 120;
+            document.getElementById('secondaryBeats').value = 3;
+            document.getElementById('tertiaryBeats').value = 6;
+            updateStatus('Inputs cleared');
+        }
+
+        function clearResults() {
+            const console = document.getElementById('results');
+            console.textContent = `Metronome Sync Calculator v1.0
+Ready to calculate synchronized BPM values...
+
+Click "Calculate" to add results to this console.
+Use "Clear Inputs" to reset form fields.  
+Use "Clear Results" to empty this console.`;
+            
+            calculationCount = 0;
+            allCalculations = [];
+            document.getElementById('calcCount').textContent = calculationCount;
+            updateStatus('Results cleared');
+        }
+
+        function exportResults() {
+            if (allCalculations.length === 0) {
+                updateStatus('No calculations to export');
+                return;
+            }
+
+            let exportText = `// Synchronized Metronome Setup
+// Generated: ${new Date().toLocaleString()}
+// Total calculations: ${allCalculations.length}
+
+`;
+
+            allCalculations.forEach((calc, index) => {
+                exportText += `// Calculation #${calc.id}
+M${calc.id} T${calc.primaryBpm} TS${calc.primaryBeats}/4 "Primary ${calc.id}"
+M${calc.id} T${calc.secondaryBpm.toFixed(2)} TS${calc.secondaryBeats}/4 "Secondary ${calc.id}"  
+M${calc.id} T${calc.tertiaryBpm.toFixed(2)} TS${calc.tertiaryBeats}/4 "Tertiary ${calc.id}"
+
+`;
+            });
+
+            exportText += `// Summary:
+`;
+            allCalculations.forEach(calc => {
+                exportText += `// #${calc.id}: ${calc.primaryBeats}@${calc.primaryBpm} → ${calc.secondaryBeats}@${calc.secondaryBpm.toFixed(1)}, ${calc.tertiaryBeats}@${calc.tertiaryBpm.toFixed(1)}
+`;
+            });
+
+            document.getElementById('exportText').value = exportText;
+            document.getElementById('exportWindow').style.display = 'block';
+        }
+
+        function closeExport() {
+            document.getElementById('exportWindow').style.display = 'none';
+        }
+
+        function copyToClipboard() {
+            const exportText = document.getElementById('exportText');
+            exportText.select();
+            document.execCommand('copy');
+            updateStatus('Copied to clipboard');
+        }
+
+        function updateStatus(message) {
+            document.querySelector('.status-line span').textContent = message;
+            setTimeout(() => {
+                document.querySelector('.status-line span').textContent = 'Ready';
+            }, 2000);
+        }
+
+        // Menu interactions
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if (this.textContent === 'Help') {
+                    document.getElementById('aboutWindow').style.display = 'block';
+                }
+            });
+        });
+
+        function closeAbout() {
+            document.getElementById('aboutWindow').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
