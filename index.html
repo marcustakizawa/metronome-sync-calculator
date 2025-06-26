@@ -395,8 +395,8 @@ Use "Clear Results" to empty this console.</div>
             newText += `
 Calculation #${calculationCount}:
   Primary:   ${primaryBeats} beats @ ${primaryBpm} BPM
-  Secondary: ${secondaryBeats} beats @ ${secondaryBpm.toFixed(1)} BPM  
-  Tertiary:  ${tertiaryBeats} beats @ ${tertiaryBpm.toFixed(1)} BPM
+  Secondary: ${secondaryBeats} beats @ ${secondaryBpm.toFixed(2)} BPM  
+  Tertiary:  ${tertiaryBeats} beats @ ${tertiaryBpm.toFixed(2)} BPM
   Ratios: ${primaryBeats}:${secondaryBeats}:${tertiaryBeats}
 `;
 
@@ -454,7 +454,7 @@ M${calc.id} T${calc.tertiaryBpm.toFixed(2)} TS${calc.tertiaryBeats}/4 "Tertiary 
             exportText += `// Summary:
 `;
             allCalculations.forEach(calc => {
-                exportText += `// #${calc.id}: ${calc.primaryBeats}@${calc.primaryBpm} → ${calc.secondaryBeats}@${calc.secondaryBpm.toFixed(1)}, ${calc.tertiaryBeats}@${calc.tertiaryBpm.toFixed(1)}
+                exportText += `// #${calc.id}: ${calc.primaryBeats}@${calc.primaryBpm} → ${calc.secondaryBeats}@${calc.secondaryBpm.toFixed(2)}, ${calc.tertiaryBeats}@${calc.tertiaryBpm.toFixed(2)}
 `;
             });
 
